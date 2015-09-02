@@ -1,6 +1,6 @@
 {
   "name": "stepansib/ldap",
-  "description": "Ldap utilities, authentication and searching",
+  "description": "PHP LDAP library functionality packed in a simple class",
   "authors": [
     {
       "name": "Stepan Yudin",
@@ -9,7 +9,7 @@
   ],
   "autoload": {
     "psr-4": {
-      "StepanSib\\LDAP\\": ""
+      "StepanSib\\LDAP\\LDAP\\": ""
     }
   }
 }
