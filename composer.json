@@ -1,0 +1,15 @@
+{
+  "name": "stepansib/ldap",
+  "description": "Ldap utilities, authorization and searching",
+  "authors": [
+    {
+      "name": "Stepan Yudin",
+      "email": "stepan.sib@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "StepanSib\\LDAP\\": ""
+    }
+  }
+}
