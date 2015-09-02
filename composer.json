@@ -1,6 +1,6 @@
 {
   "name": "stepansib/ldap",
-  "description": "Ldap utilities, authorization and searching",
+  "description": "Ldap utilities, authentication and searching",
   "authors": [
     {
       "name": "Stepan Yudin",
