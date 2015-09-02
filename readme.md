@@ -7,7 +7,10 @@ Public methods:
  - disconnect()
 
 ##1. Installation
-Under construction
+Just a simple composer command:
+```sh
+composer require stepansib/ldap
+```
 
 ##2. Usage example
 ```php
