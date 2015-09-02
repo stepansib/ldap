@@ -31,7 +31,7 @@ class LDAP
     public function connect($host)
     {
         if (trim($host) == "") {
-            $this->setErrorText("Host address is empty");
+            $this->setStatus("Host address is empty");
             return false;
         } else {
             $this->setHost($host);
@@ -42,10 +42,10 @@ class LDAP
             ldap_set_option($ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
 
             $this->setConnection($ldap);
-            $this->clearErrorText();
+            $this->clearStatus();
             return true;
         } else {
-            $this->setErrorText("LDAP connection error");
+            $this->setStatus("LDAP connection error");
             return false;
         }
 
@@ -55,10 +55,10 @@ class LDAP
     {
         if (!empty($this->getConnection())) {
             ldap_close($this->getConnection());
-            $this->clearErrorText();
+            $this->clearStatus();
             return true;
         } else {
-            $this->setErrorText("Could not close unestablished connection");
+            $this->setStatus("Could not close unestablished connection");
             return false;
         }
     }
@@ -67,26 +67,26 @@ class LDAP
     {
 
         if (empty($this->getConnection())) {
-            $this->setErrorText("Not connected to LDAP");
+            $this->setStatus("Not connected to LDAP");
             return false;
         }
 
         if (trim($user) == "") {
-            $this->setErrorText("Username is empty");
+            $this->setStatus("Username is empty");
             return false;
         } else {
             $this->setUser($user);
         }
 
         if (trim($password) == "") {
-            $this->setErrorText("Password is empty");
+            $this->setStatus("Password is empty");
             return false;
         } else {
             $this->setPassword($password);
         }
 
         if (trim($domain) == "") {
-            $this->setErrorText("Domain is empty");
+            $this->setStatus("Domain is empty");
             return false;
         } else {
             $this->setDomain($domain);
@@ -94,10 +94,10 @@ class LDAP
 
         if (ldap_bind($this->getConnection(), $this->getUser() . '@' . $this->getDomain(), $this->getPassword())) {
             $this->authenticated();
-            $this->clearErrorText();
+            $this->clearStatus();
             return true;
         } else {
-            $this->setErrorText("Could not bind to AD");
+            $this->setStatus("Could not bind to AD");
             return false;
         }
 
@@ -107,31 +107,31 @@ class LDAP
     {
 
         if (empty($this->getConnection())) {
-            $this->setErrorText("Not connected to LDAP");
+            $this->setStatus("Not connected to LDAP");
             return false;
         }
 
         if (!$this->isAuthenticated()) {
-            $this->setErrorText("Not authenticated");
+            $this->setStatus("Not authenticated");
             return false;
         }
 
         if (trim($baseDn) == "") {
-            $this->setErrorText("Base DN is empty");
+            $this->setStatus("Base DN is empty");
             return false;
         } else {
             $this->setBaseDN($baseDn);
         }
 
         if (trim($filter) == "") {
-            $this->setErrorText("Filter is empty");
+            $this->setStatus("Filter is empty");
             return false;
         } else {
             $this->setFilter($filter);
         }
 
         if (!is_array($paramsList) || count($paramsList) == 0) {
-            $this->setErrorText("AD parameters list is empty or not an array");
+            $this->setStatus("AD parameters list is empty or not an array");
             return false;
         } else {
             $this->setParamsList($paramsList);
@@ -158,18 +158,18 @@ class LDAP
                         $usersData[] = $userData;
                     }
 
-                    $this->clearErrorText();
+                    $this->clearStatus();
                     return $usersData;
                 } else {
-                    $this->setErrorText("Nothing was found");
+                    $this->setStatus("Nothing was found");
                     return false;
                 }
             } else {
-                $this->setErrorText("AD search error");
+                $this->setStatus("AD search error");
                 return false;
             }
         } else {
-            $this->setErrorText("AD search error");
+            $this->setStatus("AD search error");
             return false;
         }
 
@@ -255,17 +255,17 @@ class LDAP
         return $this->paramsList;
     }
 
-    protected function clearErrorText()
+    protected function clearStatus()
     {
         $this->errorText = "No errors";
     }
 
-    protected function setErrorText($text)
+    protected function setStatus($text)
     {
         $this->errorText = $text;
     }
 
-    public function getErrorText()
+    public function getStatus()
     {
         return $this->errorText;
     }
