@@ -11,6 +11,9 @@ namespace StepanSib\LDAP;
 class LDAP
 {
 
+    protected $conUser;
+    protected $conPassword;
+
     protected $connection;
     protected $host;
     protected $baseDn;
@@ -28,7 +31,7 @@ class LDAP
         $this->authenticated = false;
     }
 
-    public function connect($host)
+    public function connect($host, $conUser, $conPassword, $domain, $baseDn)
     {
         if (trim($host) == "") {
             $this->setStatus("Host address is empty");
@@ -37,13 +40,47 @@ class LDAP
             $this->setHost($host);
         }
 
-        if ($ldap = ldap_connect("ldap://{$host}")) {
-            ldap_set_option($ldap, LDAP_OPT_REFERRALS, 0);
-            ldap_set_option($ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+        if (trim($conUser) == "") {
+            $this->setStatus("Connection username is empty");
+            return false;
+        } else {
+            $this->setConUser($conUser);
+        }
 
-            $this->setConnection($ldap);
-            $this->clearStatus();
-            return true;
+        if (trim($conPassword) == "") {
+            $this->setStatus("Connection password is empty");
+            return false;
+        } else {
+            $this->setConPassword($conPassword);
+        }
+
+        if (trim($domain) == "") {
+            $this->setStatus("Domain is empty");
+            return false;
+        } else {
+            $this->setDomain($domain);
+        }
+
+        if (trim($baseDn) == "") {
+            $this->setStatus("Base DN is empty");
+            return false;
+        } else {
+            $this->setBaseDN($baseDn);
+        }
+
+        if ($ldap = @ldap_connect("ldap://{$host}")) {
+            @ldap_set_option($ldap, LDAP_OPT_REFERRALS, 0);
+            @ldap_set_option($ldap, LDAP_OPT_PROTOCOL_VERSION, 3);
+
+            if (@ldap_bind($ldap, $this->getConUser() . '@' . $this->getDomain(), $this->getConPassword())) {
+                $this->setConnection($ldap);
+                $this->clearStatus();
+                return true;
+            } else {
+                $this->setStatus("LDAP connection user bind error");
+                return false;
+            }
+
         } else {
             $this->setStatus("LDAP connection error");
             return false;
@@ -54,7 +91,7 @@ class LDAP
     public function disconnect()
     {
         if (!empty($this->getConnection())) {
-            ldap_close($this->getConnection());
+            @ldap_close($this->getConnection());
             $this->clearStatus();
             return true;
         } else {
@@ -63,7 +100,7 @@ class LDAP
         }
     }
 
-    public function authenticate($user, $password, $domain)
+    public function authenticate($user, $password)
     {
 
         if (empty($this->getConnection())) {
@@ -85,42 +122,79 @@ class LDAP
             $this->setPassword($password);
         }
 
-        if (trim($domain) == "") {
-            $this->setStatus("Domain is empty");
-            return false;
-        } else {
-            $this->setDomain($domain);
+        $userData = array(
+            'cn' => '',
+            'dn' => '',
+            'login' => ''
+        );
+
+        if ($dn = $this->searchByCN($this->getUser())) {
+            if (@ldap_bind($this->getConnection(), $dn, $this->getPassword())) {
+                $userData['dn'] = $dn;
+                $userData['cn'] = $this->getUser();
+                if ($users = $this->search("(&(objectClass=user)(distinguishedName=" . $dn . "))", array('sAMAccountName'))) {
+                    $userData['login'] = mb_strtolower($users[0]['sAMAccountName'], 'utf-8');
+                }
+
+                $this->clearStatus();
+                return $userData;
+            }
         }
 
-        if (ldap_bind($this->getConnection(), $this->getUser() . '@' . $this->getDomain(), $this->getPassword())) {
-            $this->authenticated();
+        if (@ldap_bind($this->getConnection(), $this->getUser() . '@' . $this->getDomain(), $this->getPassword())) {
+            $userData['login'] = mb_strtolower($this->getUser(), 'utf-8');
+            if ($users = $this->search("(&(objectClass=user)(sAMAccountName=" . $this->getUser() . "))", array('distinguishedName', 'cn'))) {
+                $userData['dn'] = $users[0]['distinguishedName'];
+                $userData['cn'] = $users[0]['cn'];
+            }
+
             $this->clearStatus();
-            return true;
-        } else {
-            $this->setStatus("Could not bind to AD");
-            return false;
+            return $userData;
         }
+
+        $this->setStatus("Could not bind to AD");
+        return false;
 
     }
 
-    public function search($baseDn, $filter, array $paramsList)
+    protected function dnToCn($dn)
     {
+        $dnParts = explode(",", $dn);
+        $cnParts = explode("=", $dnParts[0]);
+        return $cnParts[1];
+    }
+
+    protected function searchByCN($cn)
+    {
+
+        if (trim($cn) == "") {
+            $this->setStatus("CN is empty");
+            return false;
+        }
 
         if (empty($this->getConnection())) {
             $this->setStatus("Not connected to LDAP");
             return false;
         }
 
-        if (!$this->isAuthenticated()) {
-            $this->setStatus("Not authenticated");
-            return false;
+        $filter = "(&(objectClass=user)(cn=" . $cn . "))";
+
+        if ($sr = @ldap_search($this->getConnection(), $this->getBaseDN(), $filter, array('objectguid'))) {
+            if (@ldap_count_entries($this->getConnection(), $sr) == 1) {
+                return ldap_get_dn($this->getConnection(), ldap_first_entry($this->getConnection(), $sr));
+            }
         }
 
-        if (trim($baseDn) == "") {
-            $this->setStatus("Base DN is empty");
+        return false;
+
+    }
+
+    public function search($filter, array $paramsList)
+    {
+
+        if (empty($this->getConnection())) {
+            $this->setStatus("Not connected to LDAP");
             return false;
-        } else {
-            $this->setBaseDN($baseDn);
         }
 
         if (trim($filter) == "") {
@@ -143,15 +217,18 @@ class LDAP
                     $usersData = array();
 
                     for ($n = 0; $n < count($users) - 1; $n++) {
+                        //var_dump($users[$n]);
                         $userData = array();
 
                         foreach ($this->getParamsList() as $param) {
+                            $paramOriginName = $param;
+                            $param = mb_strtolower($param, 'utf-8');
                             if (isset($users[$n][$param]) && is_array($users[$n][$param])) {
-                                $userData[$param] = $users[$n][$param][0];
+                                $userData[$paramOriginName] = $users[$n][$param][0];
                             } else if (isset($users[$n][$param]) && !is_array($users[$n][$param])) {
-                                $userData[$param] = $users[$n][$param];
+                                $userData[$paramOriginName] = $users[$n][$param];
                             } else {
-                                $userData[$param] = '';
+                                $userData[$paramOriginName] = '';
                             }
                         }
 
@@ -224,6 +301,28 @@ class LDAP
     {
         return $this->password;
     }
+
+
+    protected function setConUser($conUser)
+    {
+        $this->conUser = $conUser;
+    }
+
+    protected function getConUser()
+    {
+        return $this->conUser;
+    }
+
+    protected function setConPassword($conPassword)
+    {
+        $this->conPassword = $conPassword;
+    }
+
+    protected function getConPassword()
+    {
+        return $this->conPassword;
+    }
+
 
     protected function setDomain($domain)
     {
