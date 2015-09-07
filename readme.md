@@ -24,7 +24,7 @@ $baseDn = 'DC=Company,DC=com';
 $user_to_auth = 'John Doe';
 $password_to_auth = 'johndoe123';
 $domain = 'Company';
-$searchFilter = "(memberOf=CN=Company All,CN=Users,DC=Aplana,DC=com)";
+$searchFilter = "(memberOf=CN=Company All,CN=Users,DC=Company,DC=com)";
 $paramsToRetrieve = array("distinguishedname", "displayname", "department", "title");
 
 use StepanSib\LDAP\LDAP;
