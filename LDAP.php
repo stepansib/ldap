@@ -79,7 +79,7 @@ class LDAP
             'login' => ''
         );
 
-        if ($dn = $this->searchByCN($this->getUser())) {
+        if ($dn = $this->searchByCN($user)) {
             if (@ldap_bind($this->getConnection(), $dn, $password)) {
                 $userData['dn'] = $dn;
                 $userData['cn'] = $user;
