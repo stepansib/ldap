@@ -83,8 +83,10 @@ class LDAP
             if (@ldap_bind($this->getConnection(), $dn, $password)) {
                 $userData['dn'] = $dn;
                 $userData['cn'] = $user;
-                if ($users = $this->search("(&(objectClass=user)(distinguishedName=" . $dn . "))", array('sAMAccountName'))) {
+                if ($users = $this->search("(&(objectClass=user)(distinguishedName=" . $dn . "))", array('sAMAccountName','mail','displayName'))) {
                     $userData['login'] = mb_strtolower($users[0]['sAMAccountName'], 'utf-8');
+                    $userData['mail'] = mb_strtolower($users[0]['mail'], 'utf-8');
+                    $userData['fio'] = $users[0]['displayName'];
                 }
 
                 $this->clearStatus();
@@ -94,9 +96,11 @@ class LDAP
 
         if (@ldap_bind($this->getConnection(), $user . '@' . $this->getDomain(), $password)) {
             $userData['login'] = mb_strtolower($user, 'utf-8');
-            if ($users = $this->search("(&(objectClass=user)(sAMAccountName=" . $user . "))", array('distinguishedName', 'cn'))) {
+            if ($users = $this->search("(&(objectClass=user)(sAMAccountName=" . $user . "))", array('distinguishedName', 'cn','mail','displayName'))) {
                 $userData['dn'] = $users[0]['distinguishedName'];
                 $userData['cn'] = $users[0]['cn'];
+                $userData['mail'] = mb_strtolower($users[0]['mail'], 'utf-8');
+                $userData['fio'] = $users[0]['displayName'];
             }
 
             $this->clearStatus();
