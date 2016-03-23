@@ -9,7 +9,11 @@
   ],
   "autoload": {
     "psr-4": {
-      "StepanSib\\LDAP\\": ""
+      "StepanSib\\LDAP\\": "src\\"
     }
+  },
+  "require": {
+    "symfony/options-resolver": "^3.0",
+    "beberlei/assert": "^2.5"
   }
 }
