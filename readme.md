@@ -2,7 +2,7 @@
 
 [![SensioLabs Insight](https://img.shields.io/sensiolabs/i/9dc139ea-991c-4294-988f-8445d8f68af0.svg)](https://insight.sensiolabs.com/projects/9dc139ea-991c-4294-988f-8445d8f68af0)
 [![Codacy](https://img.shields.io/codacy/38bd187bffde4b008c033a5d1837a0d3.svg)](https://www.codacy.com/app/stepan-sib/ldap)
-[![Packagist](https://img.shields.io/packagist/v/stepansib/alm-client.svg)](https://packagist.org/packages/stepansib/alm-client)
+[![Packagist](https://img.shields.io/packagist/v/stepansib/ldap.svg)](https://packagist.org/packages/stepansib/ldap)
 
 ##1. Installation
 Run in your project directory:
