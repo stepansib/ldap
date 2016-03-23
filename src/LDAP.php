@@ -113,7 +113,6 @@ class LDAP
         }
 
         return false;
-        //throw new LDAPException('authentication failed, wrong credentials');
 
     }
 

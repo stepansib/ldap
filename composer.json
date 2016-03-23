@@ -1,6 +1,7 @@
 {
   "name": "stepansib/ldap",
   "description": "PHP LDAP library functionality packed in a simple class",
+  "license": "MIT",
   "authors": [
     {
       "name": "Stepan Yudin",
