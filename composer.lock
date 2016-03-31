@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "fa466b0bf06037151aeb4fc6515be4fc",
-    "content-hash": "921611b3519b6b451c106d2747c2b1d7",
+    "hash": "6f7c808058ffbcc9b9926c32c1396e3f",
+    "content-hash": "9783d6ebea0c44287f786b61d0b2aef9",
     "packages": [
         {
             "name": "beberlei/assert",
@@ -62,16 +62,16 @@
         },
         {
             "name": "symfony/options-resolver",
-            "version": "v3.0.3",
+            "version": "v3.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/options-resolver.git",
-                "reference": "bc7ee3ef3905f7c21fbed4e921cb39d6518b1300"
+                "reference": "9a05ccd013e9089c3503d740503fb9357c8c341c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/options-resolver/zipball/bc7ee3ef3905f7c21fbed4e921cb39d6518b1300",
-                "reference": "bc7ee3ef3905f7c21fbed4e921cb39d6518b1300",
+                "url": "https://api.github.com/repos/symfony/options-resolver/zipball/9a05ccd013e9089c3503d740503fb9357c8c341c",
+                "reference": "9a05ccd013e9089c3503d740503fb9357c8c341c",
                 "shasum": ""
             },
             "require": {
@@ -112,7 +112,7 @@
                 "configuration",
                 "options"
             ],
-            "time": "2016-01-21 09:38:31"
+            "time": "2016-03-04 07:55:57"
         }
     ],
     "packages-dev": [],
@@ -121,6 +121,8 @@
     "stability-flags": [],
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "ext-ldap": "*"
+    },
     "platform-dev": []
 }
