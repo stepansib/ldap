@@ -188,7 +188,7 @@ class LDAP
      */
     protected function getBaseDn($baseDn = null)
     {
-        if (null == $baseDn) {
+        if (null === $baseDn) {
             return $this->options['base_dn'];
         }
         return $baseDn;
