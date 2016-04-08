@@ -33,7 +33,8 @@ class LDAP
                 'host',
                 'domain',
                 'username',
-                'password')
+                'password',
+                'base_dn')
         );
 
         $this->options = $resolver->resolve($options);
@@ -83,13 +84,17 @@ class LDAP
         }
     }
 
+
     /**
+     * Tries to authenticate user. If success then returns user account name
+     *
      * @param $username
      * @param $password
-     * @return bool
+     * @param null $baseDn
+     * @return bool|string
      * @throws LDAPException
      */
-    public function authenticate($username, $password)
+    public function authenticate($username, $password, $baseDn = null)
     {
 
         try {
@@ -98,13 +103,15 @@ class LDAP
             throw new LDAPException('username not specified');
         }
 
-        $usersToTry = $this->getMatchingUsernames($username);
+        $usersToTry = $this->getMatchingUsersAccountNames($username, $baseDn);
 
-        foreach ($usersToTry as $usernameToTry) {
+        foreach ($usersToTry as $userAccountName) {
             try {
                 set_error_handler(array($this, 'errorHandler'));
-                if (ldap_bind($this->getConnection(), $usernameToTry . '@' . $this->options['domain'], $password)) {
-                    return true;
+                if (ldap_bind($this->getConnection(), $userAccountName . '@' . $this->options['domain'], $password)) {
+                    restore_error_handler();
+                    $this->bind();
+                    return $userAccountName;
                 }
                 restore_error_handler();
             } catch (\Exception $e) {
@@ -112,16 +119,40 @@ class LDAP
             }
         }
 
+        $this->bind();
         return false;
-
     }
 
     /**
-     * @param $username
+     * Returns user
+     * @param $userAccountName
+     * @param null $baseDn
      * @return mixed
      * @throws LDAPException
      */
-    protected function getMatchingUsernames($username)
+    public function getUserCnByAccountName($userAccountName, $baseDn = null)
+    {
+        if ($usersFound = $this->search(
+            '(&(objectClass=user)(sAMAccountName=' . $userAccountName . '))',
+            array('cn'),
+            $baseDn
+        )
+        ) {
+            return $usersFound[0]['cn'];
+        }
+
+        throw new LDAPException('cannot get user cn name');
+    }
+
+    /**
+     * Looks for users by matching username and specified fields and returns array of users account names
+     *
+     * @param $username
+     * @param null $baseDn
+     * @return array
+     * @throws LDAPException
+     */
+    protected function getMatchingUsersAccountNames($username, $baseDn = null)
     {
 
         $usernames = array($username);
@@ -129,19 +160,22 @@ class LDAP
         $fieldsToMatch = array(
             'cn',
             'mail',
+            'userPrincipalName',
             'displayname',
             'name',
             'sAMAccountName',
         );
 
         foreach ($fieldsToMatch as $field) {
-            $usersFound = $this->search(
+            if ($usersFound = $this->search(
                 '(&(objectClass=user)(' . $field . '=' . $username . '))',
-                'DC=Aplana,DC=com',
-                array('sAMAccountName')
-            );
-            foreach ($usersFound as $user) {
-                $usernames[] = $user['sAMAccountName'];
+                array('sAMAccountName'),
+                $baseDn
+            )
+            ) {
+                foreach ($usersFound as $user) {
+                    $usernames[] = $user['sAMAccountName'];
+                }
             }
         }
 
@@ -149,16 +183,32 @@ class LDAP
     }
 
     /**
+     * @param null $baseDn
+     * @return mixed|null
+     */
+    protected function getBaseDn($baseDn = null)
+    {
+        if (null == $baseDn) {
+            return $this->options['base_dn'];
+        }
+        return $baseDn;
+    }
+
+    /**
+     * Searches for users and return an array of users and their specified parameters
+     *
      * @param $filter
-     * @param $baseDn
      * @param array $paramsToRetrieve
-     * @return array
+     * @param null $baseDn
+     * @return array|bool
      * @throws LDAPException
      */
-    public function search($filter, $baseDn, array $paramsToRetrieve = array())
+    public function search($filter, array $paramsToRetrieve = array(), $baseDn = null)
     {
+
+        $baseDn = $this->getBaseDn($baseDn);
+
         try {
-            Assertion::notEmpty($baseDn);
             Assertion::notEmpty($filter);
         } catch (\Exception $e) {
             throw new LDAPException('wrong search options - ' . $e->getMessage());
@@ -196,8 +246,11 @@ class LDAP
             }
         }
 
-        return $result;
+        if (count($result) > 0) {
+            return $result;
+        }
 
+        return false;
     }
 
     /**
