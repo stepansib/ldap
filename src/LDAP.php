@@ -67,16 +67,17 @@ class LDAP
      */
     protected function bind()
     {
-        $bindOptions = array($this->getConnection());
-
+        $username = null;
+        $password = null;
+        
         if (!$this->options['anonymous']) {
-            array_push($bindOptions, $this->options['username'] . '@' . $this->options['domain']);
-            array_push($bindOptions, $this->options['password']);
+            $username = $this->options['username'] . '@' . $this->options['domain'];
+            $password = $this->options['password'];
         }
 
         try {
             set_error_handler(array($this, 'errorHandler'));
-            ldap_bind(...$bindOptions);
+            ldap_bind($this->getConnection(), $username, $password);
             restore_error_handler();
             return true;
         } catch (\Exception $e) {
