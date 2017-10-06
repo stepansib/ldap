@@ -242,6 +242,8 @@ class LDAP
                 }
             }
 
+            $entryData['objectguid'] = $this->guidToString($entryData['objectguid']);
+
             if ($entryData['objectguid'] !== "") {
                 $result[] = $entryData;
             }
@@ -291,6 +293,47 @@ class LDAP
         }
 
         throw new LDAPException('can not close unestablished LDAP connection');
+    }
+
+    protected function guidToString($ADguid)
+    {
+        $guidinhex = str_split(bin2hex($ADguid), 2);
+        $guid = "";
+        //Take the first 4 octets and reverse their order
+        $first = array_reverse(array_slice($guidinhex, 0, 4));
+        foreach($first as $value)
+        {
+            $guid .= $value;
+        }
+        $guid .= "-";
+        // Take the next two octets and reverse their order
+        $second = array_reverse(array_slice($guidinhex, 4, 2, true), true);
+        foreach($second as $value)
+        {
+            $guid .= $value;
+        }
+        $guid .= "-";
+        // Repeat for the next two
+        $third = array_reverse(array_slice($guidinhex, 6, 2, true), true);
+        foreach($third as $value)
+        {
+            $guid .= $value;
+        }
+        $guid .= "-";
+        // Take the next two but do not reverse
+        $fourth = array_slice($guidinhex, 8, 2, true);
+        foreach($fourth as $value)
+        {
+            $guid .= $value;
+        }
+        $guid .= "-";
+        //Take the last part
+        $last = array_slice($guidinhex, 10, 16, true);
+        foreach($last as $value)
+        {
+            $guid .= $value;
+        }
+        return $guid;
     }
 
 }
