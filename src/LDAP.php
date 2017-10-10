@@ -69,7 +69,7 @@ class LDAP
     {
         $username = null;
         $password = null;
-        
+
         if (!$this->options['anonymous']) {
             $username = $this->options['username'] . '@' . $this->options['domain'];
             $password = $this->options['password'];
@@ -244,7 +244,7 @@ class LDAP
 
             $entryData['objectguid'] = $this->guidToString($entryData['objectguid']);
 
-            if ($entryData['objectguid'] !== "") {
+            if ($entryData['objectguid'] !== "" && $entryData['objectguid'] !== "----") {
                 $result[] = $entryData;
             }
         }
@@ -301,36 +301,31 @@ class LDAP
         $guid = "";
         //Take the first 4 octets and reverse their order
         $first = array_reverse(array_slice($guidinhex, 0, 4));
-        foreach($first as $value)
-        {
+        foreach ($first as $value) {
             $guid .= $value;
         }
         $guid .= "-";
         // Take the next two octets and reverse their order
         $second = array_reverse(array_slice($guidinhex, 4, 2, true), true);
-        foreach($second as $value)
-        {
+        foreach ($second as $value) {
             $guid .= $value;
         }
         $guid .= "-";
         // Repeat for the next two
         $third = array_reverse(array_slice($guidinhex, 6, 2, true), true);
-        foreach($third as $value)
-        {
+        foreach ($third as $value) {
             $guid .= $value;
         }
         $guid .= "-";
         // Take the next two but do not reverse
         $fourth = array_slice($guidinhex, 8, 2, true);
-        foreach($fourth as $value)
-        {
+        foreach ($fourth as $value) {
             $guid .= $value;
         }
         $guid .= "-";
         //Take the last part
         $last = array_slice($guidinhex, 10, 16, true);
-        foreach($last as $value)
-        {
+        foreach ($last as $value) {
             $guid .= $value;
         }
         return $guid;
