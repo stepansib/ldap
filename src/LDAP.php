@@ -260,7 +260,7 @@ class LDAP
      * @return resource
      * @throws LDAPException
      */
-    protected function getConnection()
+    public function getConnection()
     {
         if (null !== $this->connection) {
             return $this->connection;
