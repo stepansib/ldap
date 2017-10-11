@@ -201,11 +201,11 @@ class LDAP
      * @param $filter
      * @param array $paramsToRetrieve
      * @param string $baseDn
-     * @param bool $returnResult
+     * @param bool $returnWithResult
      * @return array|bool
      * @throws LDAPException
      */
-    public function search($filter, array $paramsToRetrieve = array(), $baseDn = null, $returnResult = false)
+    public function search($filter, array $paramsToRetrieve = array(), $baseDn = null, $returnWithResult = false)
     {
 
         $baseDn = $this->getBaseDn($baseDn);
@@ -223,9 +223,6 @@ class LDAP
             $searchResults = ldap_search($this->getConnection(), $baseDn, $filter, $paramsToRetrieve);
             $entries = ldap_get_entries($this->getConnection(), $searchResults);
             restore_error_handler();
-            if ($returnResult) {
-                return $searchResults;
-            }
         } catch (\Exception $e) {
             throw new LDAPException('search failed, ' . $e->getMessage());
         }
@@ -251,6 +248,13 @@ class LDAP
             if ($entryData['objectguid'] !== "" && $entryData['objectguid'] !== "----") {
                 $result[] = $entryData;
             }
+        }
+
+        if ($returnWithResult) {
+            return array(
+                $searchResults,
+                $result
+            );
         }
 
         if (count($result) > 0) {
