@@ -22,6 +22,7 @@ $ldap = new LDAP2(array(
     'username' => 'johndoe',
     'password' => '12345',
     'domain' => 'Company',
+    'base_dn' => 'DC=Company,DC=com',
 ));
 ```
 
@@ -55,7 +56,6 @@ $baseDn = 'DC=Company,DC=com';
 
 $data = $ldap->search(
     $filter,
-    $baseDn,
     array(
         'cn',
         'distinguishedname',
@@ -65,7 +65,8 @@ $data = $ldap->search(
         'sAMAccountName',
         'mail',
         'displayName'
-    )
+    ),
+    $baseDn,
 );
 ```
 The method returns assoc array with matched entries and their parameters values
