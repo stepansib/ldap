@@ -200,10 +200,11 @@ class LDAP
      *
      * @param $filter
      * @param array $paramsToRetrieve
-     * @param string $baseDn
+     * @param null|string $baseDn
      * @param bool $returnWithResult
      * @return array|bool
      * @throws LDAPException
+     * @throws \Assert\AssertionFailedException
      */
     public function search($filter, array $paramsToRetrieve = array(), $baseDn = null, $returnWithResult = false)
     {
@@ -235,7 +236,11 @@ class LDAP
                 $paramOriginName = $param;
                 $param = mb_strtolower($param, 'utf-8');
                 if (isset($entry[$param]) && is_array($entry[$param])) {
-                    $entryData[$paramOriginName] = $entry[$param][0];
+                    if ($entry[$param]['count'] > 1) {
+                        $entryData[$paramOriginName] = $entry[$param];
+                    } else {
+                        $entryData[$paramOriginName] = $entry[$param][0];
+                    }
                 } else if (isset($entry[$param]) && !is_array($entry[$param])) {
                     $entryData[$paramOriginName] = $entry[$param];
                 } else {
