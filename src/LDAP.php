@@ -29,6 +29,7 @@ class LDAP
         $resolver = new OptionsResolver();
 
         $resolver->setDefault('anonymous', false);
+        $resolver->setDefault('can_login_via_shortname', true);
         $resolver->setRequired(array(
                 'host',
                 'domain',
@@ -71,7 +72,11 @@ class LDAP
         $password = null;
 
         if (!$this->options['anonymous']) {
-            $username = $this->options['username'] . '@' . $this->options['domain'];
+            if ($this->options['can_login_via_shortname']) {
+                $username = $this->options['username'] . '@' . $this->options['domain'];
+            } else {
+                $username = $this->options['username'];
+            }
             $password = $this->options['password'];
         }
 

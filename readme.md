@@ -23,6 +23,8 @@ $ldap = new LDAP2(array(
     'password' => '12345',
     'domain' => 'Company',
     'base_dn' => 'DC=Company,DC=com',
+    'anonymous' => false,               // Optional parameter
+    'can_login_via_shortname' => true,  // Optional parameter, set to false if your LDAP instance requires authentication by full qualified name
 ));
 ```
 
