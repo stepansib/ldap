@@ -237,6 +237,7 @@ class LDAP
                 $param = mb_strtolower($param, 'utf-8');
                 if (isset($entry[$param]) && is_array($entry[$param])) {
                     if ($entry[$param]['count'] > 1) {
+                        unset($entry[$param]['count']);
                         $entryData[$paramOriginName] = $entry[$param];
                     } else {
                         $entryData[$paramOriginName] = $entry[$param][0];
