@@ -226,8 +226,20 @@ class LDAP
 
         try {
             set_error_handler(array($this, 'errorHandler'));
-            $searchResults = ldap_search($this->getConnection(), $baseDn, $filter, $paramsToRetrieve);
-            $entries = ldap_get_entries($this->getConnection(), $searchResults);
+            $entries=[];
+            $pageSize = 500;
+            $cookie = '';
+            $i=1;
+
+            do {
+                ldap_control_paged_result($this->getConnection(), $pageSize, true, $cookie);
+                $searchResults = ldap_search($this->getConnection(), $baseDn, $filter, $paramsToRetrieve);
+                $batchEntries = ldap_get_entries($this->getConnection(), $searchResults);
+
+                $entries = array_merge($entries, $batchEntries);
+
+                ldap_control_paged_result_response($this->getConnection(), $searchResults, $cookie);
+            } while($cookie !== null && $cookie != '');
             restore_error_handler();
         } catch (\Exception $e) {
             throw new LDAPException('search failed, ' . $e->getMessage());
